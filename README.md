@@ -24,9 +24,21 @@ fabmem setup
 
 > Install globally, not with `npx`. `setup` wires persistent integrations (hooks, an MCP server, a background indexer) that point at the install location — npx's temporary cache gets pruned and would silently break them.
 
+## What gets installed
+
+The npm package is small — the compiled `fabmem` CLI + engine, no source. Everything heavy is provisioned **locally, on first run, under `~/.fabmem/`** — nothing leaves your machine:
+
+- **An embedded PostgreSQL 17** — your local memory store. No system Postgres required and **no network port** is opened (it listens on a private socket).
+- **pgvector** — the vector extension for semantic search, fetched as a prebuilt binary for your platform.
+- **A local embedding model** (BGE-small) — runs on your CPU; your text is never sent to a cloud to be embedded.
+- **Code indexers (SCIP)** — installed per language the first time you index (TypeScript, Python, Go, Rust, C++, C#, Java, and more).
+- **MCP wiring + hooks** — `setup` registers fabMem's MCP server into the AI agents you already have (Claude Code, Codex, Cursor, Gemini) and adds Claude's session-memory hook.
+
+It's all self-contained under `~/.fabmem/` and simple to remove — just delete that folder.
+
 ## Three steps
 
-1. **Install fabMem** — `npm install -g fabmem`, then `fabmem setup`. It builds your first index and starts running in the background.
+1. **Set up** — `fabmem setup` provisions everything locally, wires your agents, builds your first index, and starts running in the background. Run `fabmem doctor` to confirm an AI account is connected.
 2. **Connect your tools** — approve MCP connectors for Notion, ClickUp and more, so your docs and tickets come in alongside your code.
 3. **Open the dashboard** — manage your project spheres, and choose which AI harnesses (Claude Code, Codex, Cursor) use fabMem.
 
@@ -48,18 +60,6 @@ fabmem setup
 **Config** — choose which AI accounts fabMem uses (ranked for fallback), set a budget and per-account spend limits, and watch the ingestion pipelines.
 
 ![Config tab](docs/dashboard-config.png)
-
-## What gets installed
-
-The npm package is small — the compiled `fabmem` CLI + engine, no source. Everything heavy is provisioned **locally, on first run, under `~/.fabmem/`** — nothing leaves your machine:
-
-- **An embedded PostgreSQL 17** — your local memory store. No system Postgres required and **no network port** is opened (it listens on a private socket).
-- **pgvector** — the vector extension for semantic search, fetched as a prebuilt binary for your platform.
-- **A local embedding model** (BGE-small) — runs on your CPU; your text is never sent to a cloud to be embedded.
-- **Code indexers (SCIP)** — installed per language the first time you index (TypeScript, Python, Go, Rust, C++, C#, Java, and more).
-- **MCP wiring + hooks** — `setup` registers fabMem's MCP server into the AI agents you already have (Claude Code, Codex, Cursor, Gemini) and adds Claude's session-memory hook.
-
-It's all self-contained under `~/.fabmem/` and simple to remove — just delete that folder.
 
 ## Commands
 
@@ -106,7 +106,7 @@ fabMem builds a **real, compiler-grade code index (SCIP)** — true definitions 
 **How it indexes — the cascade.** For a SCIP language, fabMem gets a *real* index by trying, in order:
 
 1. **Local build (default)** — auto-detects your toolchain and indexes with your exact environment (reusing your dependencies; reading the repo to pick the right JDK / .NET SDK / etc.). Fast, and matches how your project actually builds.
-2. **Container fallback** — if the host can't (a missing toolchain or an OS-level limit), it spins up a container to index there instead. A few languages go container-first by default — **C#, Scala, Kotlin** (host toolchains deadlock or usually aren't installed). Force containers for everything with `FABRIC_SCIP_DOCKER=1`.
+2. **Container fallback** — if the host can't (a missing toolchain or an OS-level limit), it spins up a container to index there instead. A few languages go container-first by default — **C# and Scala** (host toolchains deadlock or usually aren't installed). Force containers for everything with `FABRIC_SCIP_DOCKER=1`.
 3. **Never silently degraded** — for a SCIP language, SCIP is *authoritative*. If it genuinely can't index (no toolchain **and** no Docker), fabMem surfaces that as an issue rather than quietly dropping to a fuzzy or syntactic index.
 
 Indexers self-provision on first use (into `~/.fabmem/`), so there's nothing to install by hand. Docker is only needed for the container fallback.
@@ -125,6 +125,18 @@ Get the most out of fabMem:
 - **Build your project once locally.** If your repo already compiles on your machine, fabMem indexes straight from your existing build — no toolchain to provision and no container fallback needed. It's the fastest, most accurate path, so do this first.
 - **Install Docker as a safety net.** For a language you don't build locally (or C# / Scala / Kotlin), Docker lets fabMem index it via the container fallback.
 - **Stay current.** Node 20+; fabMem nudges you when a new version ships (`npm i -g fabmem`).
+
+### Point your agent at fabMem
+
+`fabmem setup` already injects this guidance into your agents at session start — but pasting a short rule into your **`CLAUDE.md`** / **`AGENTS.md`** / **`.cursorrules`** makes it always-on and explicit, so your agent reaches for memory instead of blindly grepping:
+
+```text
+This workspace is indexed by fabMem (the `fabmem` MCP server). For ANY broad or fuzzy question —
+where something lives, how it works, why a past decision was made, or anything spanning code, docs,
+tickets, or past AI sessions — call the fabMem tool `search_everything` FIRST, then drill into its
+hits. If your harness lists the fabmem tools as deferred/unloaded, load them before answering. Use
+your own grep/read only for an exact string you can already pinpoint.
+```
 
 ## Privacy
 
