@@ -13,22 +13,20 @@
 
 ## Install
 
+fabMem runs as a background service — `setup` installs hooks + an MCP server into your agents and keeps a local index current — so install it globally:
+
 ```bash
 npm install -g fabmem
 fabmem setup
 ```
 
-Or run it without installing:
+`setup` provisions everything locally, connects your tools, and opens the dashboard.
 
-```bash
-npx fabmem setup
-```
-
-`setup` builds your first index, walks you through connecting your tools, and opens the dashboard.
+> Install globally, not with `npx`. `setup` wires persistent integrations (hooks, an MCP server, a background indexer) that point at the install location — npx's temporary cache gets pruned and would silently break them.
 
 ## Three steps
 
-1. **Install fabMem** — `npx fabmem setup`. It builds your first index and starts running in the background.
+1. **Install fabMem** — `npm install -g fabmem`, then `fabmem setup`. It builds your first index and starts running in the background.
 2. **Connect your tools** — approve MCP connectors for Notion, ClickUp and more, so your docs and tickets come in alongside your code.
 3. **Open the dashboard** — manage your project spheres, and choose which AI harnesses (Claude Code, Codex, Cursor) use fabMem.
 
@@ -69,7 +67,7 @@ You only need four:
 
 | Command | What it does |
 |---|---|
-| `npm install -g fabmem` | Install the CLI (or skip it and use `npx fabmem …`) |
+| `npm install -g fabmem` | Install the CLI (required — fabMem runs as a background service) |
 | `fabmem setup` | Guided first-run — provisions everything above, connects your tools, opens the dashboard |
 | `fabmem doctor` | Health check — confirms an AI account is connected and the local pieces are working |
 | `fabmem dashboard` | Open the dashboard to manage spheres, connectors, and which agents use fabMem |
