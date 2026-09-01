@@ -11,6 +11,20 @@
 - **Portable** — any agent, no lock-in. One MCP server every agent plugs into; leave any tool and your memory stays.
 - **Grounded** — answers from your real project, with receipts. A real code index (SCIP) across 10+ languages, and a temporal graph that supersedes old decisions instead of leaving them to contradict.
 
+## See the difference — run this after your first full index
+
+Once your first full index has finished (the dashboard's **Config** tab shows **Code = 100%**), prove it on your own repos. Ask an agent the **same real question two ways** — `grep`/`read` only, then the same agent using the `fabmem` MCP tools (same model). Phrase it the way you'd actually ask (e.g. *"how does the app send emails, and how are they retried if they fail?"*), **not** with the code's symbol names, on a **large, multi-repo workspace**.
+
+Measured on a 23-repo, multi-language workspace:
+
+| | grep only | fabMem |
+|---|--:|--:|
+| Latency | up to **7× slower** (proven) | baseline |
+| Input tokens | **~4× more** | baseline |
+| Correctness | **~80%** | **~100%** |
+
+fabMem's answers are also fuller — the exact owning service, file, and entry point (including cross-repo), where grep returns a plausible-but-wrong pointer. It reads dense index hits instead of brute-forcing raw files across every repo, so it's faster and cheaper, and reaches cross-repo answers file search misses. On a small, well-named single repo the gap narrows; **the advantage grows with codebase size.**
+
 ## Install
 
 fabMem runs as a background service — `setup` installs hooks + an MCP server into your agents and keeps a local index current — so install it globally:
@@ -49,11 +63,11 @@ It's all self-contained under `~/.fabmem/` and simple to remove — just delete 
 
 `fabmem dashboard` opens a local dashboard (on your machine) with three tabs.
 
-**Spheres** — per-project memory isolation; see each space's indexed repos (with symbol counts) and docs.
+**Spheres** — per-project memory isolation. Each sphere is a bounded card with collapsible sections for its **repos** (indexed, with symbol counts), **docs** folders, and **connectors**. Per connector, browse the workspaces/pages feeding that sphere and remove any you don't want indexed.
 
 ![Spheres tab](docs/dashboard-spheres.png)
 
-**Connectors** — connect MCP tools like Notion and ClickUp, or see the ones detected from your AI sessions.
+**Connectors** — connect knowledge tools (Notion, ClickUp, Jira, Confluence, Linear), multiple accounts per tool, or see the ones detected from your AI sessions. In each sphere you then pick which account feeds it.
 
 ![Connectors tab](docs/dashboard-connectors.png)
 
